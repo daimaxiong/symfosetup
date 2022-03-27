@@ -1,0 +1,104 @@
+---
+- name: Playbook
+  hosts: all
+  become: yes
+  tasks:
+    - name: 'Upgrade'
+      dnf:
+        name: '*'
+        state: latest
+      tags:
+        - 'system upgrade'
+
+    - name: 'Install Git'
+      dnf:
+        name: git
+        state: present
+      tags:
+        - 'utilities'
+
+    - name: 'Install vim'
+      dnf:
+        name: 'vim'
+        state: present
+      tags:
+        - 'utilities'
+
+    - name: 'Install Apache'
+      dnf:
+        name: 'httpd'
+        state: present
+      tags:
+        - 'apache'
+
+    - name: 'Enable Apache'
+      systemd:
+        name: 'httpd'
+        state: started
+        enabled: true
+      tags:
+        - 'apache'
+
+    - name: 'Get free fusion repos'
+      dnf:
+        name: 'https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-35.noarch.rpm'
+        disable_gpg_check: true
+        state: present
+      tags:
+        - 'php'
+
+    - name: 'Get non-free fusion repos'
+      dnf:
+        name: 'https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-35.noarch.rpm'
+        disable_gpg_check: true
+        state: present
+      tags:
+        - 'php'
+
+    - name: 'Import GPG key for remi'
+      rpm_key:
+        state: present
+        key: https://rpms.remirepo.net/RPM-GPG-KEY-remi2021
+      tags:
+        - 'php'
+
+    - name: 'Get PHP remi repo'
+      dnf:
+        name: 'http://rpms.remirepo.net/fedora/remi-release-35.rpm'
+        state: present
+      tags:
+        - 'php'
+
+    - name: 'Install PHP 8.1 using remi repo'
+      dnf:
+        name: '@php:remi-8.1'
+        state: present
+      tags:
+        - 'php'
+
+    - name: 'Install PHP extensions'
+      dnf:
+        name: '{{ item }}'
+        state: present
+      loop:
+        - 'php-gd'
+        - 'php-intl'
+        - 'php-apcu'
+        - 'php-curl'
+        - 'php-gd'
+        - 'php-imagick'
+        - 'php-intl'
+        - 'php-readline'
+        - 'php-xsl'
+        - 'php-mbstring'
+        - 'php-ldap'
+        - 'php-zip'
+        - 'php-pdo'
+      tags:
+        - 'php'
+
+    - name: 'Configure Selinux'
+      selinux:
+        state: disabled
+      tags:
+        - 'Selinux'
