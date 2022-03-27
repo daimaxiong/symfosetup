@@ -99,6 +99,7 @@
 
     - name: 'Configure Selinux'
       selinux:
+        policy: 'targeted'
         state: 'permissive'
       tags:
         - 'Selinux'
