@@ -99,6 +99,6 @@
 
     - name: 'Configure Selinux'
       selinux:
-        state: disabled
+        state: 'permissive'
       tags:
         - 'Selinux'
