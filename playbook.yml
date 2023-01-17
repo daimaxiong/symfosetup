@@ -1,9 +1,22 @@
 ---
 - name: Playbook
+  vars_files:
+    - ./vars_file.yaml
   hosts: all
-  become: yes
+  become: true
   tasks:
-    - name: 'Upgrade'
+    - name: 'Ensure apache giid is set to custom value'
+      group:
+        name: 'apache'
+        state: present
+        gid: 69
+    - name: 'Ensure apache uid is set to custom value'
+      user:
+        name: 'apache'
+        state: present
+        group: 'apache'
+        uid: 69
+    - name: 'upgrade'
       dnf:
         name: '*'
         state: latest
@@ -31,6 +44,14 @@
       tags:
         - 'apache'
 
+    - name: 'Install Apache Extra Mods'
+      dnf:
+        name: 'mod_{{ item }}'
+        state: present
+      loop: '{{ apache.extra_mods }}'
+      tags:
+        - 'apache'
+
     - name: 'Enable Apache'
       systemd:
         name: 'httpd'
@@ -39,35 +60,14 @@
       tags:
         - 'apache'
 
-    - name: 'Get free fusion repos'
+    - name: 'Get extra repos'
       dnf:
-        name: 'https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-35.noarch.rpm'
+        name: '{{ item }}'
         disable_gpg_check: true
         state: present
+      loop: '{{ repos }}'
       tags:
-        - 'php'
-
-    - name: 'Get non-free fusion repos'
-      dnf:
-        name: 'https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-35.noarch.rpm'
-        disable_gpg_check: true
-        state: present
-      tags:
-        - 'php'
-
-    - name: 'Import GPG key for remi'
-      rpm_key:
-        state: present
-        key: https://rpms.remirepo.net/RPM-GPG-KEY-remi2021
-      tags:
-        - 'php'
-
-    - name: 'Get PHP remi repo'
-      dnf:
-        name: 'http://rpms.remirepo.net/fedora/remi-release-35.rpm'
-        state: present
-      tags:
-        - 'php'
+        - 'repos'
 
     - name: 'Install PHP 8.1 using remi repo'
       dnf:
@@ -80,26 +80,37 @@
       dnf:
         name: '{{ item }}'
         state: present
-      loop:
-        - 'php-gd'
-        - 'php-intl'
-        - 'php-apcu'
-        - 'php-curl'
-        - 'php-gd'
-        - 'php-imagick'
-        - 'php-intl'
-        - 'php-readline'
-        - 'php-xsl'
-        - 'php-mbstring'
-        - 'php-ldap'
-        - 'php-zip'
-        - 'php-pdo'
+      loop: '{{ php.extensions }}'
       tags:
         - 'php'
+
+    - name: 'Install PHP FPM'
+      dnf:
+        name: 'php-fpm'
+        state: present
+      tags:
+        - 'php'
+        - 'php_fpm'
+
+    - name: 'Enable PHP-fpm'
+      systemd:
+        name: 'php-fpm'
+        state: started
+        enabled: true
+      tags:
+        - 'php'
+
+    - name: 'Stop firewall'
+      systemd:
+        name: firewalld
+        state: stopped
+        enabled: no
+      tags:
+        - 'firewalld'
 
     - name: 'Configure Selinux'
       selinux:
         policy: 'targeted'
         state: 'permissive'
       tags:
-        - 'Selinux'
+        - 'selinux'

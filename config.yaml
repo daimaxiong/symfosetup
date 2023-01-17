@@ -1,0 +1,7 @@
+---
+ssh_private_key_path: '~/projects/rocky/keys/.ssh/vagrant_id_rsa'
+ip: '192.168.35.10'
+memory: '2048'
+cpus: '2'
+base_box: 'rocky'
+vm_name: 'symfo'
