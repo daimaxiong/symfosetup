@@ -1,4 +1,5 @@
 ---
+remote_user: 'vagrant'
 repos:
   - 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm'
   - 'https://dl.fedoraproject.org/pub/epel/epel-next-release-latest-9.noarch.rpm'
@@ -33,3 +34,4 @@ php:
     - 'php-ldap'
     - 'php-zip'
     - 'php-pdo'
+composer_version: '2.5.1'

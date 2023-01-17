@@ -114,3 +114,65 @@
         state: 'permissive'
       tags:
         - 'selinux'
+
+    - name: 'Install wget'
+      dnf:
+        name: 'wget'
+        state: present
+      tags:
+        - 'composer'
+
+    - name: 'Install composer - requirements'
+      dnf:
+        name:
+          - zip
+          - unzip
+        disable_gpg_check: yes
+        state: present
+      tags:
+        - 'composer'
+
+    - name: 'upload install script'
+      template:
+        src: 'composer_install.sh.j2'
+        dest: '/home/{{ remote_user }}/composer_install.sh'
+        owner: 'root'
+        group: 'root'
+        mode: '0750'
+        force: yes
+      tags:
+        - 'composer'
+        -
+    - name: 'Install composer'
+      command:
+        chdir: '/home/{{ remote_user }}'
+        cmd: 'sh composer_install.sh'
+      tags:
+        - 'composer'
+
+    - name: 'make composer globally available as composer'
+      raw: mv "/usr/bin/composer.phar" /usr/bin/composer
+      tags:
+        - 'composer'
+
+    - name: 'Download symfony cli rpm installer script'
+      get_url:
+        url: 'https://dl.cloudsmith.io/public/symfony/stable/setup.rpm.sh'
+        dest: '/home/{{ remote_user }}/symfony_setup.rpm.sh'
+        mode: '0750'
+      tags:
+        - 'symfony'
+
+    - name: 'Install symfony cli repo'
+      command:
+        chdir: '/home/{{ remote_user }}'
+        cmd: 'sh symfony_setup.rpm.sh'
+      tags:
+        - 'symfony'
+
+    - name: 'Install symfony cli'
+      dnf:
+        name: 'symfony-cli'
+        state: present
+      tags:
+        - 'symfony'

@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
         box.vm.provision 'ansible' do |ansible|
             ansible.compatibility_mode = "2.0"
             ansible.verbose = "v"
-            ansible.tags = 'all'
+            ansible.tags = ['composer', 'symfony']
             ansible.skip_tags = ''
             ansible.playbook = "./playbook.yml"
         end
