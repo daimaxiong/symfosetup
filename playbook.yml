@@ -23,6 +23,21 @@
       tags:
         - 'system upgrade'
 
+    - name: 'Stop firewall'
+      systemd:
+        name: firewalld
+        state: stopped
+        enabled: no
+      tags:
+        - 'firewalld'
+
+    - name: 'Configure Selinux'
+      selinux:
+        policy: 'targeted'
+        state: 'permissive'
+      tags:
+        - 'selinux'
+
     - name: 'Install Git'
       dnf:
         name: git
@@ -57,6 +72,31 @@
         name: 'httpd'
         state: started
         enabled: true
+      tags:
+        - 'apache'
+
+    - name: 'Permissions for docroot'
+      file:
+        path: '{{ apache.document_root_base_dir }}'
+        owner: 'apache'
+        group: 'apache'
+        mode: '0775'
+      tags:
+        - 'apache'
+
+    - name: 'Add remote user to apache group for convenience'
+      user:
+        name: '{{ remote_user }}'
+        groups: 'apache'
+        append: yes
+      tags:
+        - 'apache'
+
+    - name: 'Add apache to remote user group for convenience'
+      user:
+        name: 'apache'
+        groups: '{{ remote_user }}'
+        append: yes
       tags:
         - 'apache'
 
@@ -99,21 +139,6 @@
         enabled: true
       tags:
         - 'php'
-
-    - name: 'Stop firewall'
-      systemd:
-        name: firewalld
-        state: stopped
-        enabled: no
-      tags:
-        - 'firewalld'
-
-    - name: 'Configure Selinux'
-      selinux:
-        policy: 'targeted'
-        state: 'permissive'
-      tags:
-        - 'selinux'
 
     - name: 'Install wget'
       dnf:
@@ -176,3 +201,25 @@
         state: present
       tags:
         - 'symfony'
+        -
+    - name: 'Ensure app log dir exists'
+      file:
+        path: '{{ apache.log_dir}}/{{ app_name }}'
+        state: directory
+        mode: '0755'
+        owner: 'apache'
+        group: 'apache'
+      tags:
+        - 'vhost'
+        -
+    - name: 'Vhost configuration file'
+      template:
+        src: 'vhost.conf.j2'
+        dest: '{{ apache.server_root }}/{{ apache.vhost_conf_dir }}/vhost.conf'
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
+        force: yes
+      tags:
+        - 'vhost'
+        - 'new'

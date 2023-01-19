@@ -10,6 +10,8 @@ apache:
   server_root: '/etc/httpd'
   document_root_base_dir: '/var/www'
   document_root: 'html'
+  vhost_conf_dir: 'conf.d'
+  log_dir: '/var/log/httpd'
   listen: 80
   user: apache
   group: apache
@@ -35,3 +37,11 @@ php:
     - 'php-zip'
     - 'php-pdo'
 composer_version: '2.5.1'
+app_name: 'symsixtwo'
+vhost:
+  document_root: '{{ app_name }}/public'
+  server_name: 'symfo62.de'
+  server_admin: 'admin@localhost'
+  log_level: 'warn'
+  error_log: 'logs/{{ app_name }}/error_log'
+  access_log: 'logs/{{ app_name }}/access_log'
